@@ -1,6 +1,5 @@
 package run.halo.app.service.impl;
 
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.file.FileReader;
 import cn.hutool.core.lang.Validator;
 import cn.hutool.core.util.RandomUtil;
@@ -24,7 +23,6 @@ import run.halo.app.model.dto.StatisticDTO;
 import run.halo.app.model.entity.User;
 import run.halo.app.model.enums.CommentStatus;
 import run.halo.app.model.enums.LogType;
-import run.halo.app.model.enums.Mode;
 import run.halo.app.model.enums.PostStatus;
 import run.halo.app.model.params.LoginParam;
 import run.halo.app.model.params.ResetPasswordParam;
@@ -38,9 +36,6 @@ import run.halo.app.service.*;
 import run.halo.app.utils.FileUtils;
 import run.halo.app.utils.HaloUtils;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -49,6 +44,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -302,7 +299,7 @@ public class AdminServiceImpl implements AdminService {
 
         environmentDTO.setVersion(HaloConst.HALO_VERSION);
 
-        environmentDTO.setMode(Mode.valueFrom(this.mode));
+        environmentDTO.setMode(haloProperties.getMode());
 
         return environmentDTO;
     }
@@ -312,7 +309,7 @@ public class AdminServiceImpl implements AdminService {
         Assert.hasText(refreshToken, "Refresh token must not be blank");
 
         Integer userId = cacheStore.getAny(SecurityUtils.buildTokenRefreshKey(refreshToken), Integer.class)
-                .orElseThrow(() -> new BadRequestException("登陆状态已失效，请重新登陆").setErrorData(refreshToken));
+                .orElseThrow(() -> new BadRequestException("登录状态已失效，请重新登录").setErrorData(refreshToken));
 
         // Get user info
         User user = userService.getById(userId);
@@ -477,6 +474,8 @@ public class AdminServiceImpl implements AdminService {
 
         File file = new File(haloProperties.getWorkDir(), LOG_PATH);
 
+        List<String> linesArray = new ArrayList<>();
+
         StringBuilder result = new StringBuilder();
 
         if (!file.exists()) {
@@ -497,8 +496,7 @@ public class AdminServiceImpl implements AdminService {
                     randomAccessFile.seek(pos);
                     if (randomAccessFile.readByte() == '\n') {
                         String line = randomAccessFile.readLine();
-                        result.append(new String(line.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8));
-                        result.append(StringUtils.LF);
+                        linesArray.add(new String(line.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8));
                         count++;
                         if (count == lines) {
                             break;
@@ -507,8 +505,7 @@ public class AdminServiceImpl implements AdminService {
                 }
                 if (pos == 0) {
                     randomAccessFile.seek(0);
-                    result.append(new String(randomAccessFile.readLine().getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8));
-                    result.append(StringUtils.LF);
+                    linesArray.add(new String(randomAccessFile.readLine().getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8));
                 }
             }
         } catch (Exception e) {
@@ -522,6 +519,14 @@ public class AdminServiceImpl implements AdminService {
                 }
             }
         }
+
+        Collections.reverse(linesArray);
+
+        linesArray.forEach(line -> {
+            result.append(line)
+                    .append(StringUtils.LF);
+        });
+
         return result.toString();
     }
 }

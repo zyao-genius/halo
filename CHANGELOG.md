@@ -129,7 +129,7 @@
 - 主题列表默认将已启用的主题放在第一位。
 - 关于页面支持复制环境信息。
 - 增加附加视频预览功能，并对不支持预览的缩略图做不支持处理。@guqing
-- 支持登陆页面设置 API 地址。@johnniang
+- 支持登录页面设置 API 地址。@johnniang
 - 支持选择头像的时候使用 Gravatar。
 - 支持在文章列表选择文章进行设置。
 - 新增文章/页面列表点击标题预览的特性。@guqing
@@ -209,7 +209,7 @@
 - 修复导出博客数据的问题。
 
 ## Tips
-> 此版本为 0.x 最后一个版本，不支持直接升级到 v1.0 版本。如需从 0.x 升级为 v1.0，请参考 https://halo.run/docs/migrate-from-0.4.4.html
+> 此版本为 0.x 最后一个版本，不支持直接升级到 v1.0 版本。如需从 0.x 升级为 v1.0，请参考 https://halo.run/archives/install-migrate-from-044
 
 # 0.4.3
 ## New features

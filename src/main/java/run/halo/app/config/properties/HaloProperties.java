@@ -2,10 +2,8 @@ package run.halo.app.config.properties;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import run.halo.app.model.enums.Mode;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.Duration;
 
 import static run.halo.app.model.support.HaloConst.*;
@@ -37,6 +35,11 @@ public class HaloProperties {
     private boolean authEnabled = true;
 
     /**
+     * Halo startup mode.
+     */
+    private Mode mode = Mode.PRODUCTION;
+
+    /**
      * Admin path.
      */
     private String adminPath = "admin";
@@ -61,9 +64,11 @@ public class HaloProperties {
      */
     private Duration downloadTimeout = Duration.ofSeconds(30);
 
-    public HaloProperties() throws IOException {
-        // Create work directory if not exist
-        Files.createDirectories(Paths.get(workDir));
-        Files.createDirectories(Paths.get(backupDir));
-    }
+    /**
+     * cache store impl
+     * memory
+     * level
+     */
+    private String cache = "memory";
+
 }
