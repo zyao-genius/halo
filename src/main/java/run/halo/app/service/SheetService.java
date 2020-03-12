@@ -35,12 +35,12 @@ public interface SheetService extends BasePostService<Sheet> {
     /**
      * Creates a sheet.
      *
-     * @param sheet      sheet must not be null
-     * @param sheetMetas sheet metas
-     * @param autoSave   autoSave
+     * @param sheet    sheet must not be null
+     * @param metas    sheet metas
+     * @param autoSave autoSave
      * @return created sheet
      */
-    Sheet createBy(@NonNull Sheet sheet, Set<SheetMeta> sheetMetas, boolean autoSave);
+    Sheet createBy(@NonNull Sheet sheet, Set<SheetMeta> metas, boolean autoSave);
 
     /**
      * Updates a sheet.
@@ -55,22 +55,22 @@ public interface SheetService extends BasePostService<Sheet> {
     /**
      * Updates a sheet.
      *
-     * @param sheet      sheet must not be null
-     * @param sheetMetas sheet metas
-     * @param autoSave   autoSave
+     * @param sheet    sheet must not be null
+     * @param metas    sheet metas
+     * @param autoSave autoSave
      * @return updated sheet
      */
-    Sheet updateBy(@NonNull Sheet sheet, Set<SheetMeta> sheetMetas, boolean autoSave);
+    Sheet updateBy(@NonNull Sheet sheet, Set<SheetMeta> metas, boolean autoSave);
 
     /**
      * Gets by url
      *
      * @param status post status must not be null
-     * @param url    post url must not be blank
+     * @param slug   post slug must not be blank
      * @return sheet
      */
     @Override
-    Sheet getBy(PostStatus status, String url);
+    Sheet getBy(PostStatus status, String slug);
 
     /**
      * Import sheet from markdown document.

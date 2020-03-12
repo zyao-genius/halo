@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
  * OptionService implementation class
  *
  * @author ryanwang
+ * @author johnniang
  * @date 2019-03-14
  */
 @Slf4j
@@ -192,17 +193,17 @@ public class OptionServiceImpl extends AbstractCrudService<Option, Integer> impl
 
             // Add default property
             propertyEnumMap.keySet()
-                    .stream()
-                    .filter(key -> !keys.contains(key))
-                    .forEach(key -> {
-                        PropertyEnum propertyEnum = propertyEnumMap.get(key);
+                .stream()
+                .filter(key -> !keys.contains(key))
+                .forEach(key -> {
+                    PropertyEnum propertyEnum = propertyEnumMap.get(key);
 
-                        if (StringUtils.isBlank(propertyEnum.defaultValue())) {
-                            return;
-                        }
+                    if (StringUtils.isBlank(propertyEnum.defaultValue())) {
+                        return;
+                    }
 
-                        result.put(key, PropertyEnum.convertTo(propertyEnum.defaultValue(), propertyEnum));
-                    });
+                    result.put(key, PropertyEnum.convertTo(propertyEnum.defaultValue(), propertyEnum));
+                });
 
             // Cache the result
             cacheStore.putAny(OPTIONS_KEY, result);
@@ -222,8 +223,8 @@ public class OptionServiceImpl extends AbstractCrudService<Option, Integer> impl
         Map<String, Object> result = new HashMap<>(keys.size());
 
         keys.stream()
-                .filter(optionMap::containsKey)
-                .forEach(key -> result.put(key, optionMap.get(key)));
+            .filter(optionMap::containsKey)
+            .forEach(key -> result.put(key, optionMap.get(key)));
 
         return result;
     }
@@ -323,6 +324,11 @@ public class OptionServiceImpl extends AbstractCrudService<Option, Integer> impl
     }
 
     @Override
+    public <T> T getByPropertyOrDefault(PropertyEnum property, Class<T> propertyType) {
+        return getByProperty(property, propertyType).orElse(property.defaultValue(propertyType));
+    }
+
+    @Override
     public <T> Optional<T> getByProperty(PropertyEnum property, Class<T> propertyType) {
         return getByProperty(property).map(propertyValue -> PropertyEnum.convertTo(propertyValue.toString(), propertyType));
     }
@@ -360,9 +366,19 @@ public class OptionServiceImpl extends AbstractCrudService<Option, Integer> impl
     @Override
     public int getPostPageSize() {
         try {
-            return getByPropertyOrDefault(PostProperties.INDEX_PAGE_SIZE, Integer.class, DEFAULT_COMMENT_PAGE_SIZE);
+            return getByPropertyOrDefault(PostProperties.INDEX_PAGE_SIZE, Integer.class, DEFAULT_POST_PAGE_SIZE);
         } catch (NumberFormatException e) {
             log.error(PostProperties.INDEX_PAGE_SIZE.getValue() + " option is not a number format", e);
+            return DEFAULT_POST_PAGE_SIZE;
+        }
+    }
+
+    @Override
+    public int getArchivesPageSize() {
+        try {
+            return getByPropertyOrDefault(PostProperties.ARCHIVES_PAGE_SIZE, Integer.class, DEFAULT_ARCHIVES_PAGE_SIZE);
+        } catch (NumberFormatException e) {
+            log.error(PostProperties.ARCHIVES_PAGE_SIZE.getValue() + " option is not a number format", e);
             return DEFAULT_POST_PAGE_SIZE;
         }
     }
@@ -380,7 +396,7 @@ public class OptionServiceImpl extends AbstractCrudService<Option, Integer> impl
     @Override
     public int getRssPageSize() {
         try {
-            return getByPropertyOrDefault(PostProperties.RSS_PAGE_SIZE, Integer.class, DEFAULT_COMMENT_PAGE_SIZE);
+            return getByPropertyOrDefault(PostProperties.RSS_PAGE_SIZE, Integer.class, DEFAULT_RSS_PAGE_SIZE);
         } catch (NumberFormatException e) {
             log.error(PostProperties.RSS_PAGE_SIZE.getValue() + " setting is not a number format", e);
             return DEFAULT_RSS_PAGE_SIZE;
@@ -454,6 +470,16 @@ public class OptionServiceImpl extends AbstractCrudService<Option, Integer> impl
     }
 
     @Override
+    public String getSeoKeywords() {
+        return getByProperty(SeoProperties.KEYWORDS).orElse("").toString();
+    }
+
+    @Override
+    public String getSeoDescription() {
+        return getByProperty(SeoProperties.DESCRIPTION).orElse("").toString();
+    }
+
+    @Override
     public long getBirthday() {
         return getByProperty(PrimaryProperties.BIRTHDAY, Long.class).orElseGet(() -> {
             long currentTime = DateUtils.now().getTime();
@@ -465,6 +491,51 @@ public class OptionServiceImpl extends AbstractCrudService<Option, Integer> impl
     @Override
     public PostPermalinkType getPostPermalinkType() {
         return getEnumByPropertyOrDefault(PermalinkProperties.POST_PERMALINK_TYPE, PostPermalinkType.class, PostPermalinkType.DEFAULT);
+    }
+
+    @Override
+    public String getSheetPrefix() {
+        return getByPropertyOrDefault(PermalinkProperties.SHEET_PREFIX, String.class, PermalinkProperties.SHEET_PREFIX.defaultValue());
+    }
+
+    @Override
+    public String getLinksPrefix() {
+        return getByPropertyOrDefault(PermalinkProperties.LINKS_PREFIX, String.class, PermalinkProperties.LINKS_PREFIX.defaultValue());
+    }
+
+    @Override
+    public String getPhotosPrefix() {
+        return getByPropertyOrDefault(PermalinkProperties.PHOTOS_PREFIX, String.class, PermalinkProperties.PHOTOS_PREFIX.defaultValue());
+    }
+
+    @Override
+    public String getJournalsPrefix() {
+        return getByPropertyOrDefault(PermalinkProperties.JOURNALS_PREFIX, String.class, PermalinkProperties.JOURNALS_PREFIX.defaultValue());
+    }
+
+    @Override
+    public String getArchivesPrefix() {
+        return getByPropertyOrDefault(PermalinkProperties.ARCHIVES_PREFIX, String.class, PermalinkProperties.ARCHIVES_PREFIX.defaultValue());
+    }
+
+    @Override
+    public String getCategoriesPrefix() {
+        return getByPropertyOrDefault(PermalinkProperties.CATEGORIES_PREFIX, String.class, PermalinkProperties.CATEGORIES_PREFIX.defaultValue());
+    }
+
+    @Override
+    public String getTagsPrefix() {
+        return getByPropertyOrDefault(PermalinkProperties.TAGS_PREFIX, String.class, PermalinkProperties.TAGS_PREFIX.defaultValue());
+    }
+
+    @Override
+    public String getPathSuffix() {
+        return getByPropertyOrDefault(PermalinkProperties.PATH_SUFFIX, String.class, PermalinkProperties.PATH_SUFFIX.defaultValue());
+    }
+
+    @Override
+    public Boolean isEnabledAbsolutePath() {
+        return getByPropertyOrDefault(OtherProperties.GLOBAL_ABSOLUTE_PATH_ENABLED, Boolean.class, true);
     }
 
     @Override
