@@ -5,18 +5,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.client.RestTemplate;
+import run.halo.app.cache.AbstractStringCacheStore;
 import run.halo.app.cache.InMemoryCacheStore;
 import run.halo.app.cache.LevelCacheStore;
-import run.halo.app.cache.StringCacheStore;
 import run.halo.app.config.properties.HaloProperties;
+import run.halo.app.model.support.HaloConst;
 import run.halo.app.utils.HttpClientUtils;
 
+import javax.annotation.PostConstruct;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -33,6 +36,9 @@ public class HaloConfiguration {
 
     @Autowired
     HaloProperties haloProperties;
+
+    @Autowired
+    BuildProperties buildProperties;
 
     @Bean
     public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
@@ -51,8 +57,8 @@ public class HaloConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public StringCacheStore stringCacheStore() {
-        StringCacheStore stringCacheStore;
+    public AbstractStringCacheStore stringCacheStore() {
+        AbstractStringCacheStore stringCacheStore;
         switch (haloProperties.getCache()) {
             case "level":
                 stringCacheStore = new LevelCacheStore();
@@ -70,4 +76,8 @@ public class HaloConfiguration {
 
     }
 
+    @PostConstruct
+    public void init() {
+        HaloConst.HALO_VERSION = buildProperties.getVersion();
+    }
 }
